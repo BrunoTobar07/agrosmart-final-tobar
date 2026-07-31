@@ -21,11 +21,11 @@ se busca en una tabla.
 
 | # | Parámetro | Cómo se obtiene | Mi valor |
 |:---:|-----------|-----------------|----------|
-| — | `16` | los 2 últimos dígitos de mi cédula | |
-| 1 | Nombre de la tabla | `tbl_productos_base_16` | |
-| 2 | Puerto | `8116` | |
-| 3 | Categoría | Flores | |
-| — | Audiencia para el prompt de IA | floristerías premium | |
+| — | NN | 16 |
+| 1 | Nombre de la tabla | tbl_productos_base_16 |
+| 2 | Puerto | 8116 |
+| 3 | Categoría | Flores |
+| — | Audiencia para el prompt de IA | floristerías premium |
 
 **Tabla de categorías:**
 
