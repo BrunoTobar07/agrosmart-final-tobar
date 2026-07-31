@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -25,40 +26,53 @@ public class ProductoService {
     );
 
     private final ProductoRepository repository;
+    private final AgroSmartAIService aiService;
 
-    public ProductoService(ProductoRepository repository) {
+    public ProductoService(
+            ProductoRepository repository,
+            AgroSmartAIService aiService
+    ) {
         this.repository = repository;
+        this.aiService = aiService;
     }
 
     public Flux<Producto> obtenerProductosComercializables() {
         return Mono.fromCallable(repository::findAll)
-                // JPA es bloqueante: la consulta se ejecuta fuera del event loop de Netty.
                 .subscribeOn(Schedulers.boundedElastic())
-                // Convierte el Mono<List<ProductoEntity>> en un Flux<ProductoEntity>.
                 .flatMapMany(Flux::fromIterable)
-                // Convierte cada entidad JPA en el modelo de dominio inmutable.
                 .map(ProductoMapper::toDominio)
-                // Crea una nueva instancia con el nombre en mayúsculas.
                 .map(ProductoFilters.A_MAYUSCULAS)
-                // Conserva únicamente productos con precio positivo y correos.
                 .filter(ProductoFilters.IS_VALID)
-                // Registra cada producto emitido sin modificarlo.
                 .doOnNext(ProductoFilters.LOG_PRODUCTO)
-                // Emite un producto genérico si no existen productos válidos.
                 .defaultIfEmpty(PRODUCTO_GENERICO);
     }
 
     public Mono<Producto> buscarPorId(Long id) {
         return Mono.fromCallable(() -> repository.findById(id))
-                // findById de JPA también es bloqueante.
                 .subscribeOn(Schedulers.boundedElastic())
-                // Convierte Optional.empty() en Mono.empty().
                 .flatMap(Mono::justOrEmpty)
-                // Convierte la entidad encontrada al modelo inmutable.
                 .map(ProductoMapper::toDominio)
-                // Cambia el flujo vacío por un error de dominio.
                 .switchIfEmpty(
                         Mono.error(new ProductoNoEncontradoException(id))
                 );
+    }
+
+    public Mono<String> generarPublicidad(
+            String producto,
+            String audiencia
+    ) {
+        return Mono.fromCallable(
+                        () -> aiService.generarPublicidad(
+                                producto,
+                                audiencia
+                        )
+                )
+                .subscribeOn(Schedulers.boundedElastic())
+                .timeout(Duration.ofSeconds(30))
+                .onErrorResume(error -> Mono.just(
+                        "Publicidad no disponible en este momento ("
+                                + error.getClass().getSimpleName()
+                                + ")"
+                ));
     }
 }
