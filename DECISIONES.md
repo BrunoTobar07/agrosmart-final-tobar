@@ -141,29 +141,47 @@ public static final Function<Producto, Producto> A_MAYUSCULAS =
 **4.1** Pega tu método `obtenerProductosComercializables()` completo.
 
 ```java
-
+public Flux<Producto> obtenerProductosComercializables() {
+    return Mono.fromCallable(repository::findAll)
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMapMany(Flux::fromIterable)
+            .map(ProductoMapper::toDominio)
+            .map(ProductoFilters.A_MAYUSCULAS)
+            .filter(ProductoFilters.IS_VALID)
+            .doOnNext(ProductoFilters.LOG_PRODUCTO)
+            .defaultIfEmpty(PRODUCTO_GENERICO);
+}
 ```
 
 **4.2** ¿Qué pasa **exactamente** si eliminas
 `.subscribeOn(Schedulers.boundedElastic())` de ese método? Si lo probaste, indica qué
 hilo aparecía en el log antes y después.
 
->
+>Si se elimina `.subscribeOn(Schedulers.boundedElastic())`, la llamada bloqueante `repository.findAll()` podría ejecutarse en el mismo hilo encargado de atender la petición WebFlux. Normalmente, este sería un hilo del event loop de Netty, identificado como `reactor-http-nio-*`.
+
+>El problema es que, mientras Hibernate espera una conexión o la respuesta de PostgreSQL, ese hilo quedaría ocupado y no podría atender otras solicitudes. Esto afectaría el rendimiento y la capacidad de respuesta de toda la aplicación.
+
+>En mi caso, no eliminé el operador durante las pruebas, por lo que no realicé una comparación directa de los hilos antes y después. Sin embargo, en la implementación actual, la consulta se ejecuta en el grupo de hilos `boundedElastic`, que está diseñado precisamente para aislar este tipo de operaciones bloqueantes y evitar que afecten al flujo reactivo principal.
 
 **4.3** ¿Por qué `Mono.fromCallable(...)` y no `Mono.just(repository.findAll())`?
 (pista: cuándo se ejecuta cada uno)
 
->
+>Usé `Mono.fromCallable(repository::findAll)` porque difiere la ejecución de la consulta hasta que alguien se suscribe al flujo. Esto permite que `subscribeOn(Schedulers.boundedElastic())` controle el hilo donde se ejecutará Hibernate. En cambio, `Mono.just(repository.findAll())` ejecutaría `repository.findAll()` inmediatamente, antes de construir y suscribir el flujo, por lo que la llamada bloqueante ocurriría fuera del control del scheduler reactivo.
+
 
 **4.4** En **tu** código, ¿dónde usaste `defaultIfEmpty` y dónde `switchIfEmpty`, y por
 qué no son intercambiables en esos dos lugares?
 
->
+> Usé `defaultIfEmpty(PRODUCTO_GENERICO)` al final de `obtenerProductosComercializables()`. Si después del `filter` no queda ningún producto válido, el flujo emite un producto genérico en lugar de terminar vacío.
+
+> Usé `switchIfEmpty(Mono.error(new ProductoNoEncontradoException(id)))` en `buscarPorId(Long id)`. Cuando `repository.findById(id)` devuelve un `Optional` vacío, el flujo cambia a un `Mono` que emite un error de dominio.
+
+> No son intercambiables porque cumplen funciones diferentes. En el primer método necesito devolver un valor alternativo del mismo tipo cuando no existe un resultado. En cambio, en `buscarPorId` necesito modificar el flujo para generar un error, el cual posteriormente se convierte en una respuesta HTTP 404.
 
 **4.5** ¿Por qué `doOnNext` no sirve para transformar el elemento, si aparentemente
 "recibe" el producto?
 
->
+> `doOnNext` recibe el producto únicamente para ejecutar un efecto lateral, como registrar su id y nombre mediante `LOG_PRODUCTO`. El `Consumer<Producto>` utilizado por este operador no devuelve ningún valor y el elemento continúa sin cambios. Para transformar el producto debo usar `map`, como hice con `ProductoFilters.A_MAYUSCULAS`, que recibe un producto y devuelve una nueva instancia.
 
 ---
 
