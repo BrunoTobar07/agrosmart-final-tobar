@@ -17,10 +17,10 @@
 
 ## Datos
 
-- **Nombre:**
-- **Cédula:**
-- **NN (dos últimos dígitos):**
-- **Categoría asignada (según el último dígito):**
+- **Nombre: Bruno Alejandro Tobar Iguasnia**
+- **Cédula: 1727471516**
+- **NN (dos últimos dígitos): 16**
+- **Categoría asignada (según el último dígito):Flores**
 
 ---
 
@@ -28,23 +28,28 @@
 
 **1.1** ¿Qué archivo activa el perfil `prod` y qué línea exacta lo hace?
 
->
+>El perfil `prod` se activa desde `src/main/resources/application.properties`, mediante la línea:
+
+`spring.profiles.active=prod`
 
 **1.2** Pega la línea del log de arranque donde se ve tu puerto y el perfil activo.
 
 ```
-
+The following 1 profile is active: "prod"
+Database JDBC URL [jdbc:postgresql://127.0.0.1:5433/agrosmart_db?ApplicationName=agrosmart]
+Netty started on port 8116 (http)
+Started AgrosmartApplication
 ```
 
 **1.3** ¿Qué habría pasado si dejabas `ddl-auto=create-drop` en lugar de `update`?
 Responde pensando en tus datos sembrados.
 
->
+>Si hubiera dejado `spring.jpa.hibernate.ddl-auto=create-drop`, Hibernate habría creado el esquema al iniciar y lo habría eliminado al cerrar la aplicación. Eso provocaría la pérdida de los cinco productos sembrados y obligaría a recrearlos en cada ejecución. Por esa razón utilicé `update`, que conserva los datos y solo actualiza el esquema cuando es necesario.
 
 **1.4** ¿Levantaste PostgreSQL con `compose.yaml` (Opción A) o con una instalación local
 (Opción B)? ¿Qué ventaja tiene la que elegiste?
 
->
+>Levanté PostgreSQL con `compose.yaml`, correspondiente a la Opción A. Elegí esta alternativa porque permite reproducir el entorno sin depender de una instalación local de PostgreSQL. Durante la configuración detecté un conflicto en el puerto 5432, por lo que publiqué el contenedor en el puerto 5433 y configuré la conexión JDBC como `jdbc:postgresql://127.0.0.1:5433/agrosmart_db`.
 
 ---
 
