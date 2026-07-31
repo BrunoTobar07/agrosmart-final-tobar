@@ -95,26 +95,45 @@ lo fuera? (piensa en la restricción `unique` de `nombre_producto`)
 **3.1** ¿Por qué tienes **dos** clases (`ProductoEntity` y `Producto`) en lugar de una?
 ¿Qué te impide hacer inmutable directamente la entidad de Hibernate?
 
->
+>Tengo dos clases porque cumplen responsabilidades diferentes. `ProductoEntity` representa la tabla `tbl_productos_base_16` y debe ser mutable, tener constructor vacío y setters para que Hibernate pueda crear y cargar sus instancias. En cambio, `Producto` representa el modelo de dominio utilizado por la lógica de la aplicación y es completamente inmutable. No hice inmutable directamente la entidad porque Hibernate necesita cargarla y modificar sus atributos durante el proceso de persistencia.
 
 **3.2** Escribe el código exacto de **tus dos** copias defensivas e indica en qué línea
 está cada una.
 
-```java
+>La copia defensiva de entrada está en `Producto.java`, línea 27:
 
+```text
+this.correosNotificacion = new ArrayList<>(correosNotificacion);
+```
+
+>La copia defensiva de salida está en Producto.java, líneas 46 a 50:
+
+```java
+public List<String> getCorreosNotificacion() {
+    return Collections.unmodifiableList(
+            new ArrayList<>(correosNotificacion)
+    );
+}
 ```
 
 **3.3** ¿Por qué la copia defensiva **solo en el getter** no sería suficiente? Describe
 el ataque concreto que quedaría abierto sobre **tu** clase.
 
->
+>La copia defensiva únicamente en el getter no sería suficiente porque el constructor conservaría la referencia de la lista recibida. En mi clase `Producto`, una persona podría crear una lista, pasarla al constructor y después modificar esa lista original. Aunque el getter devolviera una copia, el estado interno del producto ya habría sido alterado desde el exterior. La copia del constructor evita ese ataque al crear una lista independiente desde el momento de construcción.
 
 **3.4** ¿Cómo implementaste `A_MAYUSCULAS` para no mutar el `Producto` recibido?
-
+>Implementé `A_MAYUSCULAS` creando un nuevo objeto `Producto`. La función no cambia el nombre ni ningún atributo del objeto recibido:
 ```java
-
+public static final Function<Producto, Producto> A_MAYUSCULAS =
+        producto -> new Producto(
+                producto.getId(),
+                producto.getNombre().toUpperCase(),
+                producto.getCategoria(),
+                producto.getPrecioUsd(),
+                producto.getCorreosNotificacion()
+        );
 ```
-
+> El producto original permanece intacto y la función devuelve una nueva instancia con el nombre en mayúsculas.
 ---
 
 ## Fase 4 — Servicio reactivo y aislamiento del bloqueo
