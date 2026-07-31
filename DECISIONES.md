@@ -237,8 +237,9 @@ consulta a base de datos?
 **5.5** Si tu proveedor devolvió un error durante el examen, pega el mensaje real y la
 respuesta que produjo tu `onErrorResume`.
 
->Hasta este punto no se realizó una solicitud al proveedor de IA. La aplicación arrancó correctamente y AgroSmartAIService fue detectado por Spring.
+>Durante mi prueba el proveedor no devolvió un error, por lo que `onErrorResume` no tuvo que ejecutarse. La solicitud real respondió correctamente con HTTP 200 y produjo esta frase:
 
+>"Eleva tu selección: Rosas de exportación premium, calidad insuperable para tus creaciones florales."
 ---
 
 ## Fase 6 — API reactiva con WebFlux
@@ -246,17 +247,49 @@ respuesta que produjo tu `onErrorResume`.
 **6.1** Pega la salida real de tus cuatro `curl`.
 
 ```
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> curl.exe -i http://localhost:8116/api/productos
+HTTP/1.1 200 OK
+transfer-encoding: chunked
+Content-Type: application/json
+
+[{"id":1,"nombre":"ROSAS DE EXPORTACIÓN PREMIUM","categoria":"Flores","precioUsd":120.50,"correosNotificacion":["ventas@agrosmart.ec"]},{"id":2,"nombre":"GYPSOPHILA BLANCA","categoria":"Flores","precioUsd":85.00,"correosNotificacion":["comercial@agrosmart.ec"]},{"id":3,"nombre":"CLAVEL ECUATORIANO SELECTO","categoria":"Flores","precioUsd":65.75,"correosNotificacion":["pedidos@agrosmart.ec"]}]
+```
+```
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> curl.exe -i http://localhost:8116/api/productos/1
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 135
+
+{"id":1,"nombre":"Rosas de exportación premium","categoria":"Flores","precioUsd":120.50,"correosNotificacion":["ventas@agrosmart.ec"]}
+```
 
 ```
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> curl.exe -i http://localhost:8116/api/productos/9999
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+Content-Length: 127
+
+{"timestamp":"2026-07-31T20:28:38.658Z","path":"/api/productos/9999","status":404,"error":"Not Found","requestId":"f0d808ea-3"}
+```
+
+```
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> curl.exe -i -G "http://localhost:8116/api/agrosmart/publicidad" --data-urlencode "producto=Rosas de exportación premium" --data-urlencode "audiencia=floristerías premium"
+HTTP/1.1 200 OK
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 103
+
+"Eleva tu selección: Rosas de exportación premium, calidad insuperable para tus creaciones florales."
+```
+
 
 **6.2** ¿Cómo lograste que el id inexistente responda **404** y no 500?
 
->
+>En `ProductoService.buscarPorId()` utilicé `switchIfEmpty(Mono.error(new ProductoNoEncontradoException(id)))` cuando el repositorio devuelve un `Optional` vacío. En `ProductoNoEncontradoException` agregué `@ResponseStatus(HttpStatus.NOT_FOUND)`. Gracias a esa anotación, WebFlux traduce mi excepción de dominio a HTTP 404. Lo comprobé solicitando `/api/productos/9999`.
 
 **6.3** ¿Qué pasaría si tu controlador devolviera `List<Producto>` en lugar de
 `Flux<Producto>`? ¿Seguiría compilando? ¿Seguiría siendo no bloqueante?
 
->
+>Podría compilar si cambiara también la implementación para construir y devolver una lista, pero perdería la firma reactiva y la posibilidad de emitir los productos progresivamente. En mi aplicación, convertir el `Flux<Producto>` actual en una `List<Producto>` de manera síncrona requeriría usar `block()` o ejecutar directamente una operación bloqueante, lo cual está prohibido y bloquearía el hilo que atiende la petición. Por eso `AgroSmartController.obtenerProductos()` devuelve directamente el `Flux<Producto>` generado por `ProductoService`.
 
 ---
 
