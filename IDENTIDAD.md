@@ -6,11 +6,11 @@
 >
 > Completa **todos** los campos. El código del examen ya viene escrito: no lo cambies.
 
-- **Nombre completo:**
-- **Cédula:**
-- **NRC:**
-- **Código del examen:** `AGSK-2026`
-- **Fecha y hora de inicio:**      <!-- formato: 2026-XX-XX HH:MM -->
+- **Nombre completo:Bruno Alejandro Tobar Iguasnia**
+- **Cédula:1727471516**
+- **NRC:30405**
+- **Código del examen:** `AGS-2026`
+- **Fecha y hora de inicio: 2026-07-30 21:57**      <!-- formato: 2026-XX-XX HH:MM -->
 
 ---
 
@@ -21,11 +21,11 @@ se busca en una tabla.
 
 | # | Parámetro | Cómo se obtiene | Mi valor |
 |:---:|-----------|-----------------|----------|
-| — | `NN` | los 2 últimos dígitos de mi cédula | |
-| 1 | Nombre de la tabla | `tbl_productos_base_` + `NN` | |
-| 2 | Puerto | `81` + `NN` | |
-| 3 | Categoría | según el **último dígito** (tabla de abajo) | |
-| — | Audiencia para el prompt de IA | según la categoría | |
+| — | `16` | los 2 últimos dígitos de mi cédula | |
+| 1 | Nombre de la tabla | `tbl_productos_base_16` | |
+| 2 | Puerto | `8116` | |
+| 3 | Categoría | Flores | |
+| — | Audiencia para el prompt de IA | floristerías premium | |
 
 **Tabla de categorías:**
 
