@@ -336,20 +336,63 @@ de copia defensiva?
 **8.1** Pega tu `git log --oneline --graph --all`.
 
 ```
-
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> git --no-pager log --oneline --graph --all
+*   1860188 (HEAD -> feature/documentacion, origin/feature/documentacion) Merge origin/main into feature/documentacion
+|\  
+| *   336af55 (origin/main, origin/HEAD) Merge pull request #7 from BrunoTobar07/feature/pruebas
+| |\  
+| | * 298e8c3 (origin/feature/pruebas, feature/pruebas) test: agrega pruebas unitarias del dominio y servicio reactivo
+| |/  
+* / b2dde09 docs: recupera respuestas completas de la fase 7
+|/  
+*   98fcfd4 (main) Merge pull request #6 from BrunoTobar07/feature/api-reactiva
+|\  
+| * e64b877 (origin/feature/api-reactiva, feature/api-reactiva) feat: expone api reactiva de productos y publicidad
+|/  
+*   679508b Merge pull request #5 from BrunoTobar07/feature/ia-langchain4j
+|\  
+| * 39f852a (origin/feature/ia-langchain4j, feature/ia-langchain4j) feat: integra langchain4j para publicidad de productos
+|/  
+*   a86a420 Merge pull request #4 from BrunoTobar07/feature/servicio-reactivo
+|\  
+| * e40f209 (origin/feature/servicio-reactivo, feature/servicio-reactivo) feat: implementa servicio reactivo y aisla operaciones bloqueantes
+|/  
+*   3b45480 Merge pull request #3 from BrunoTobar07/feature/modelo-inmutable
+|\  
+| * bb8ff2f (origin/feature/modelo-inmutable, feature/modelo-inmutable) feat: agrega modelo inmutable de producto y logica funcional
+|/  
+*   a4c3a89 Merge pull request #2 from BrunoTobar07/feature/persistencia-jpa
+|\  
+| * 52fc9e2 (origin/feature/persistencia-jpa, feature/persistencia-jpa) feat: agrega entidad jpa de productos y siembra de datos
+|/  
+*   6307e46 Merge pull request #1 from BrunoTobar07/feature/config-perfiles
+|\  
+| * 292fd16 (origin/feature/config-perfiles, feature/config-perfiles) chore: configura perfil prod con postgresql y puerto propio
+|/  
+* 078e25e chore: incorpora base spring boot con webflux jpa y langchain4j
+* f7212c2 fix: corrige datos de identidad y semilla personal
+* 8b2604a fix: corrige datos de identidad y semilla personal
+* e2f5dc4 chore: inicializa proyecto agrosmart y registra identidad del examen
+* 5fe5dca Initial commit
+PS C:\Users\tobab\OneDrive\Desktop\AGROSMART_EXAMEN_FINAL\agrosmart-final-tobar> 
 ```
 
 **8.2** ¿Qué fase te tomó más tiempo del previsto y por qué?
 
->
+>La fase que me tomó más tiempo del previsto fue la Fase 4, correspondiente al servicio reactivo. La dificultad principal fue integrar un repositorio JPA bloqueante dentro de una aplicación WebFlux sin bloquear los hilos de Netty. Tuve que comprender cómo envolver `repository.findAll()` y `repository.findById()` con `Mono.fromCallable(...)`, trasladar su ejecución a `Schedulers.boundedElastic()` y convertir posteriormente los resultados al flujo reactivo correspondiente.
+> También tuve que revisar el orden de operadores como `flatMapMany`, `map`, `filter`, `defaultIfEmpty` y `switchIfEmpty`, porque cada uno cumplía una función diferente dentro de `ProductoService`. Esta fase requirió más pruebas que las demás para comprobar que se devolvieran únicamente los tres productos comercializables, que apareciera el producto genérico cuando no existieran resultados válidos y que un identificador inexistente produjera correctamente el error HTTP 404.
 
 **8.3** Si tuvieras 30 minutos más, ¿qué mejorarías **primero** de tu entrega y por qué
 esa y no otra?
 
->
+>Mejoraría primero la cobertura de pruebas de la capa web utilizando `WebTestClient`. Actualmente comprobé con `StepVerifier` la lógica de `ProductoService`, incluidos los tres productos válidos, el producto genérico, el identificador inexistente y los dos caminos de la IA. Sin embargo, añadiría pruebas directas para `/api/productos`, `/api/productos/{id}` y `/api/agrosmart/publicidad`, verificando los códigos HTTP, el contenido devuelto y especialmente que el id inexistente responda 404.
 
 **8.4** Declara honestamente qué herramientas consultaste durante el examen
 (documentación, apuntes, asistentes de IA) y para qué. **Esta declaración no descuenta
 puntaje**; su omisión o falsedad sí constituye falta de honestidad académica.
 
->
+> Durante el examen consulté el `README.md` y el archivo `DECISIONES.md` proporcionados en la plantilla para revisar los requisitos técnicos, las rutas obligatorias, los nombres de las ramas, los commits requeridos y las evidencias que debía presentar. También revisé los apuntes y materiales de clase de Programación Avanzada para recordar conceptos relacionados con WebFlux, programación reactiva, inmutabilidad, JUnit, StepVerifier y control de versiones.
+> 
+> Utilicé ChatGPT como asistente de IA para revisar fragmentos de código, comprender errores de Maven, PostgreSQL, Git y Vim .Sus sugerencias fueron comprobadas ejecutando personalmente la aplicación, las consultas de PostgreSQL, los `curl`, las pruebas automatizadas y los comandos de Git.
+> 
+> Para desarrollar y verificar la solución utilicé IntelliJ IDEA, PowerShell, Maven, Docker Desktop, PostgreSQL, Git y GitHub. Estas herramientas me permitieron editar el código, levantar la base de datos, ejecutar la aplicación y las pruebas, comprobar los endpoints y gestionar las ramas y Pull Requests del repositorio.

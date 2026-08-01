@@ -51,15 +51,10 @@ se busca en una tabla.
 
 ## Defensa oral
 
-> 🎥 **Completa esto en la Fase 8.** Este es el **único** lugar donde se declara el video:
-> a Moodle solo se sube la URL del repositorio. Verifica el enlace en una ventana de
-> incógnito antes de cerrar la entrega — si no abre sin tu sesión iniciada, equivale a no
-> haberlo entregado y C8 se califica en nivel 1.
-
-- **Enlace al video (5 min, cámara + pantalla):**
-- **Plataforma:**                  <!-- Drive institucional / OneDrive / YouTube no listado -->
-- **Acceso verificado en incógnito:**   ☐ Sí
-- **Duración real:**
+- **Enlace al video (5 min, cámara + pantalla):** https://youtu.be/lxQdBNxJFsY
+- **Plataforma:** YouTube
+- **Acceso verificado en incógnito:** ☑ Sí
+- **Duración real:** 5 minutos 47 segundos
 
 ---
 
@@ -69,4 +64,4 @@ Declaro que este repositorio es de mi autoría individual, que sustentaré oralm
 decisión de diseño que contiene, y que el historial de commits refleja fielmente el
 proceso de desarrollo que realicé.
 
-**Firma (nombre completo):**
+**Firma (nombre completo):**Bruno Alejandro Tobar Iguasnia
