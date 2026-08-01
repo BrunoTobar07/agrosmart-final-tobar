@@ -298,28 +298,36 @@ Content-Length: 103
 **7.1** Pega la salida real de tus pruebas (`./mvnw test` o `./gradlew test`).
 
 ```
-
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 10.905 s
+[INFO] Finished at: 2026-07-31T16:17:35-05:00
 ```
 
 **7.2** ¿Cuántos productos espera tu `expectNextCount(...)` y por qué ese número
 concreto? Relaciónalo con tu semilla.
 
->
+>En `ProductoServiceTest` utilicé `expectNextCount(3)` porque mi semilla establece cinco productos: tres válidos y dos inválidos. Los tres válidos tienen precio mayor que cero y al menos un correo de notificación. El producto con precio `0.00` y el producto sin correos son eliminados por `ProductoFilters.IS_VALID`, por lo que el `Flux` debe emitir exactamente tres elementos.
 
 **7.3** ¿Por qué mockeaste `ProductoRepository` en lugar de dejar que la prueba consulte
 PostgreSQL?
 
->
+>Mockeé `ProductoRepository` porque quería probar únicamente el comportamiento de `ProductoService`, sin depender de Docker, PostgreSQL, credenciales, puertos ni datos externos. Mediante Mockito controlo exactamente lo que devuelve `findAll()` y `findById()`. De esta manera, las pruebas son rápidas, repetibles y pueden ejecutarse con `./mvnw test` incluso cuando PostgreSQL está apagado.
 
 **7.4** ¿Qué demuestra `assertNotSame` que `assertEquals` **no** demuestra en tu prueba
 de copia defensiva?
 
->
+>`assertEquals` únicamente demuestra que dos listas contienen los mismos valores. Dos referencias distintas pueden ser iguales por contenido. En cambio, `assertNotSame` demuestra que `correosOriginales` y la lista devuelta por `producto.getCorreosNotificacion()` no son el mismo objeto en memoria. Esto confirma que mi clase creó una copia defensiva y no expuso la referencia mutable recibida en el constructor.
 
 **7.5** ¿Por qué una prueba de un `Flux` que no llama a `verifyComplete()` (o a
 `verify()`) no está probando nada?
 
->
+>Un `Flux` es diferido y no ejecuta su cadena hasta que existe una suscripción. `StepVerifier.create(...)` solamente prepara el escenario de verificación. La llamada a `verifyComplete()` realiza la suscripción, ejecuta el flujo, valida los elementos esperados y comprueba la señal final `onComplete`. Si no llamara a `verifyComplete()` o `verify()`, la consulta simulada, los operadores y las aserciones reactivas nunca se ejecutarían.
 
 ---
 
